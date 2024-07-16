@@ -8,19 +8,19 @@ import (
 	"log/slog"
 	"time"
 
-	"streamingconfig"
+	config "streamingconfig"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type config struct {
+type conf struct {
 	Name string `json:"name" default:"john"`
 	Age  int    `json:"age"`
 }
 
-func (c *config) Update(new streamingconfig.Config) error {
-	newCfg, ok := new.(*config)
+func (c *conf) Update(new config.Config) error {
+	newCfg, ok := new.(*conf)
 	if !ok {
 		return errors.New("wrong configuration")
 	}
@@ -33,8 +33,8 @@ func (c *config) Update(new streamingconfig.Config) error {
 func main() {
 	lgr := slog.Default()
 	db := getDb()
-	repo, err := streamingconfig.NewWatchedRepo[*config](
-		streamingconfig.Args{
+	repo, err := config.NewWatchedRepo[*conf](
+		config.Args{
 			Logger: lgr,
 			DB:     db,
 		})
@@ -64,9 +64,9 @@ func main() {
 	// notice version 0 indicates that the repository was not yet initialized (no
 	// update yet called, configuration leverages only default values)
 	prettyPrintJson(v0)
-	v1, err := repo.UpdateConfig(ctx, streamingconfig.UpdateConfigCmd[*config]{
+	v1, err := repo.UpdateConfig(ctx, config.UpdateConfigCmd[*conf]{
 		By: "user1",
-		Config: &config{
+		Config: &conf{
 			Name: "bobby",
 			Age:  30,
 		},
@@ -89,7 +89,11 @@ func getDb() *mongo.Database {
 	opts.ApplyURI("mongodb://localhost:27017/?connect=direct")
 	client, err := mongo.Connect(ctx, opts)
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("run `make dependencies_up` before, error: %w", err))
+	}
+	err = client.Ping(ctx, nil)
+	if err != nil {
+		panic(fmt.Errorf("error %v\nrun `make dependencies_up` before running main\n", err))
 	}
 	return client.Database("test")
 }

@@ -157,6 +157,7 @@ func (s *WatchedRepo[T]) Start(ctx context.Context) (<-chan struct{}, error) {
 	return done, nil
 }
 
+// GetConfig gets the current user-defined configuration with defaults applied to it.
 func (s *WatchedRepo[T]) GetConfig() (T, error) {
 	v, err := s.GetLatestVersion()
 	if err != nil {
@@ -166,7 +167,8 @@ func (s *WatchedRepo[T]) GetConfig() (T, error) {
 	return v.Config, err
 }
 
-// GetLatestVersion returns the latest config version
+// GetLatestVersion returns the latest version of the user-provided configuration
+// along with auditing data.
 func (s *WatchedRepo[T]) GetLatestVersion() (*Versioned[T], error) {
 	if !s.started {
 		return nil, ErrNotStarted
@@ -174,6 +176,8 @@ func (s *WatchedRepo[T]) GetLatestVersion() (*Versioned[T], error) {
 	return s.cfgWithDefaults, nil
 }
 
+// ListVersionedConfigsQuery provide query parameters for listing configurations
+// by version.
 type ListVersionedConfigsQuery struct {
 	// FromVersion version from which retrieve the configs (inclusive)
 	FromVersion uint32
@@ -181,6 +185,8 @@ type ListVersionedConfigsQuery struct {
 	ToVersion uint32
 }
 
+// ListVersionedConfigs returns a list of the user-provided configuration
+// versions along with auditing data.
 func (s *WatchedRepo[T]) ListVersionedConfigs(
 	ctx context.Context,
 	query ListVersionedConfigsQuery,
@@ -212,6 +218,8 @@ func (s *WatchedRepo[T]) ListVersionedConfigs(
 	return configs, nil
 }
 
+// ListConfigDatesQuery provide query parameters for listing configurations
+// by dates.
 type ListConfigDatesQuery struct {
 	// From is the time from which retrieve the configs (inclusive)
 	From time.Time
@@ -219,6 +227,8 @@ type ListConfigDatesQuery struct {
 	To time.Time
 }
 
+// ListVersionedConfigsByDate returns a list of the user-provided configuration
+// versions along with auditing data.
 func (s *WatchedRepo[T]) ListVersionedConfigsByDate(
 	ctx context.Context,
 	query ListConfigDatesQuery,
@@ -256,7 +266,7 @@ type UpdateConfigCmd[T Config] struct {
 }
 
 // UpdateConfig retrieves the latest configuration, modifies it by calling the
-// underlying `Update` method and creates a new version
+// underlying `Update` method and creates a new updated version.
 func (s *WatchedRepo[T]) UpdateConfig(ctx context.Context, cmd UpdateConfigCmd[T]) (*Versioned[T], error) {
 	if !s.started {
 		return nil, ErrNotStarted
