@@ -1,0 +1,23 @@
+version: "3.8"
+
+services:
+  # MongoDB replica set with a single member
+  # Replica Set is required to run transactions in MongoDB.
+  mongo:
+    image: mongo:6
+    command: [ --replSet, my-replica-set, --bind_ip_all, --port, "27017" ]
+    ports:
+      - '27017:27017'
+    healthcheck:
+      test: test $$(mongosh --port 27017 --quiet --eval "try {rs.initiate({_id:'my-replica-set',members:[{_id:0,host:\"mongo:27017\"}]})} catch(e) {rs.status().ok}") -eq 1
+      interval: 10s
+
+  wait:
+    image: ghcr.io/ufoscout/docker-compose-wait:2.12.1
+    depends_on:
+      mongo:
+        condition: service_started
+    environment:
+      WAIT_HOSTS: mongo:27017
+    command:
+      - /wait
