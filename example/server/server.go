@@ -90,14 +90,14 @@ func (s *server) listConfigsHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintf(w, "fromVersion must be a non-negative integer")
-		s.lgr.With("error", err).ErrorContext(r.Context(), "parsing from-version string %s", fromVersionStr)
+		s.lgr.With("error", err).ErrorContext(r.Context(), fmt.Sprintf("parsing from-version string %s", fromVersionStr))
 		return
 	}
 	toVersion, err := strconv.ParseUint(toVersionStr, 0, 32)
 	if err != nil {
-		s.lgr.With("error", err).ErrorContext(r.Context(), "parsing to-version string %s", toVersionStr)
-		fmt.Fprintf(w, "toVersion must be a non-negative integer")
 		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "toVersion must be a non-negative integer")
+		s.lgr.With("error", err).ErrorContext(r.Context(), fmt.Sprintf("parsing to-version string %s", toVersionStr))
 		return
 	}
 	versions, err := s.repo.ListVersionedConfigs(r.Context(), config.ListVersionedConfigsQuery{

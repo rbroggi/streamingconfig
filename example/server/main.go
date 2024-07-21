@@ -19,8 +19,9 @@ import (
 )
 
 type conf struct {
-	Name string `json:"name" default:"john"`
-	Age  int    `json:"age"`
+	Name    string   `json:"name" default:"john"`
+	Age     int      `json:"age"`
+	Friends []string `json:"friends" default:"[\"mark\",\"tom\",\"jack\"]"`
 }
 
 func (c *conf) Update(new config.Config) error {
@@ -30,6 +31,7 @@ func (c *conf) Update(new config.Config) error {
 	}
 	c.Name = newCfg.Name
 	c.Age = newCfg.Age
+	c.Friends = newCfg.Friends
 	return nil
 }
 
