@@ -2,26 +2,41 @@
 
 ![](doc/img.png)
 
-A [mongodb change-streams](https://www.mongodb.com/docs/manual/changeStreams/) powered hot-reloadable configuration Go library. 
+Streamingconfig is a [MongoDB Change Streams](https://www.mongodb.com/docs/manual/changeStreams/) powered, hot-reloadable configuration for Go!
 
-Can be used in your Go distributed services for:
+This library enables real-time configuration updates in your distributed Go services, eliminating the need for restarts.
 
-* feature flag activation/deactivation;
-* dynamic configuration change without need for container/service restarts;
+Benefits:
 
-A typical usecase is a kubernetes replicaset/deployment with multiple pods - upon configuration changes all pods local configurations will be updated.
+* **Dynamic Feature Flags**: Activate or deactivate features on the fly.
+* **Zero-Downtime Config Reloads**: Update configurations without service interruptions.
 
-The user-provided configuration must support `json` field tags for serialization/deserialization.
+Ideal for:
+
+* **Kubernetes Deployments**: Ensures all pods receive configuration changes seamlessly.
+
+A streamingconfig is a simple Go struct that:
+* contains json and default field tags;
+* implements a simple single interface:
+```go
+type Config interface {
+    Update(new Config) error
+}
+```
 
 ## Design
 
-* Auditable: the library aims at keeping historical information about configuration changes—this is achieved at the price of 
- higher storage consumption as each configuration change translates to a new document in the collection containing all configuration 
-fields.
-* Immutable: the configurations are versioned and immutable - every update is reflected as a new document.
-* Eventually-consistent: a configuration change will be replicated to the other local repositories eventually.
-* Default values are not persisted, they are local-only. This allows you to change default values
-  when rolling out new configuration versions.
+* **Auditable**: All configuration changes are tracked for historical reference. 
+This comes at the cost of increased storage consumption, as each change creates a 
+new document containing all configuration fields.
+* **Immutable**: Configurations are versioned and immutable. Every update creates 
+a new version, preserving the history.
+* **Eventually Consistent**: Configuration changes eventually replicate to other local 
+repositories. There may be a slight delay.
+* **Dynamic Defaults**: Default values are not stored and can be modified during 
+deployment of new configuration versions.
+* **Fast Local Retrieval**: Getting configuration data locally is fast as it's retrieved 
+from memory, not requiring remote queries.
 
 ## Usage
 
