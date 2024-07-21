@@ -1,0 +1,15 @@
+### GET latest config
+GET http://localhost:8080/configs/latest
+
+
+### Modify latest config
+PUT http://localhost:8080/configs/latest
+user-id: mark
+
+{
+  "name": "stark",
+  "age": 35
+}
+
+### List config versions
+GET http://localhost:8080/configs?fromVersion=0&toVersion=21

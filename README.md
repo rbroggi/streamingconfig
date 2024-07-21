@@ -25,7 +25,7 @@ fields.
 
 ## Usage
 
-checkout the [example](./example/main.go).
+checkout the [example](./example/server/main.go).
 
 1. Define a configuration with `json` field tags (and optionally with `default` field tags):
 2. Make sure that your configuration type implements the `streamingconfig.Config` interface:
@@ -36,4 +36,35 @@ checkout the [example](./example/main.go).
 ```shell
 make dependencies_up
 make tests
+```
+
+### Run example server
+
+```shell
+make dependencies_up
+make example
+```
+
+Optionally, you can also start a second server to check that the changes happening in one server will be reflected in the other:
+
+```shell
+HTTP_PORT=8081 make example
+```
+
+#### Getting latest configuration request
+```shell
+curl -X GET --location "http://localhost:8080/configs/latest"
+```
+#### Changing latest configuration request
+```shell
+curl -X PUT --location "http://localhost:8080/configs/latest" \
+    -H "user-id: mark" \
+    -d '{
+  "name": "betty",
+  "age": 35
+}'
+```
+#### Listing multiple versions
+```shell
+curl -X GET --location "http://localhost:8080/configs?fromVersion=0&toVersion=21"
 ```

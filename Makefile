@@ -12,3 +12,9 @@ dependencies_up: dependencies_down
 ## tests: runs tests against a locally running mongo container
 tests:
 	go test -v ./...
+
+.PHONY: example
+## example: runs an http-server locally
+example:
+	go build -o bin/server streamingconfig/example/server
+	./bin/server
