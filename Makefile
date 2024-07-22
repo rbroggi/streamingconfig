@@ -16,5 +16,5 @@ tests:
 .PHONY: example
 ## example: runs an http-server locally
 example:
-	go build -o bin/server streamingconfig/example/server
+	go build -o bin/server github.com/rbroggi/streamingconfig/example/server
 	./bin/server
