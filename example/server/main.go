@@ -12,7 +12,7 @@ import (
 	"syscall"
 	"time"
 
-	config "streamingconfig"
+	config "github.com/rbroggi/streamingconfig"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"

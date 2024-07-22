@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	config "streamingconfig"
+	config "github.com/rbroggi/streamingconfig"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

@@ -37,14 +37,70 @@ repositories. There may be a slight delay.
 deployment of new configuration versions.
 * **Fast Local Retrieval**: Getting configuration data locally is fast as it's retrieved 
 from memory, not requiring remote queries.
+* **Input validation**: User-provided configuration changes validation through the `Update` method.
 
 ## Usage
 
-checkout the [example](./example/server/main.go).
+checkout the [example](./example/server/main.go) folder for a more real-world scenario. 
 
-1. Define a configuration with `json` field tags (and optionally with `default` field tags):
-2. Make sure that your configuration type implements the `streamingconfig.Config` interface:
-3. Instantiate and start the repository and use it. 
+As a library user, you will have to:
+
+1. Define a configuration with `json` field tags (and optionally with `default` field tags);
+2. Make sure that your configuration type implements the `streamingconfig.Config` interface;
+    > **_NOTE:_**  Within the `Update` method you can implement configuration validation see example below.
+3. Instantiate and start the repository and use it;
+
+```go
+package main
+
+import (
+	"errors"
+	config "github.com/rbroggi/streamingconfig"
+)
+
+type conf struct {
+	Name    string   `json:"name" default:"john"`
+	Age     int      `json:"age"`
+}
+
+func (c *conf) Update(new config.Config) error {
+	newCfg, ok := new.(*conf)
+	if !ok {
+		return errors.New("wrong configuration")
+	}
+	c.Name = newCfg.Name
+	c.Age = newCfg.Age
+	return c.validate()
+}
+
+// validation should not disallow zero-values as the `Update` 
+// method is called on the struct without it's default values.
+func (c *conf) validate() error {
+	if c.Age < 0 {
+		return errors.New("age must not be negative")
+	}
+	return nil
+}
+
+func main() {
+	repo, err := config.NewWatchedRepo[*conf](
+		config.Args{
+			Logger: getLogger(),
+			DB:     getDatabase(),
+		})
+	if err != nil {
+		log.Fatal(err)
+	}
+	ctx, cnl := context.WithCancel(context.Background())
+	done, err := repo.Start(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	// use repo
+	cnl()
+	<-done
+}
+```
 
 ## Test
 

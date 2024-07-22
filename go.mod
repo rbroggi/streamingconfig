@@ -1,4 +1,4 @@
-module streamingconfig
+module github.com/rbroggi/streamingconfig
 
 go 1.22
 

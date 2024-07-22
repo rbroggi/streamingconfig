@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"strconv"
 
-	config "streamingconfig"
+	config "github.com/rbroggi/streamingconfig"
 )
 
 type server struct {
