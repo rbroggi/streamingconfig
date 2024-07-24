@@ -71,6 +71,12 @@ func WithCollectionName[T Config](collectionName string) func(repo *WatchedRepo[
 	}
 }
 
+func WithOnUpdate[T Config](onUpdate func(conf T)) func(repo *WatchedRepo[T]) {
+	return func(repo *WatchedRepo[T]) {
+		repo.onUpdate = onUpdate
+	}
+}
+
 type WatchedRepo[T Config] struct {
 	lgr             *slog.Logger
 	source          *mongo.Database
@@ -82,6 +88,7 @@ type WatchedRepo[T Config] struct {
 	skipIndexOperation bool
 	configs            *mongo.Collection
 	started            bool
+	onUpdate           func(conf T)
 }
 
 func NewWatchedRepo[T Config](
@@ -418,6 +425,9 @@ func (s *WatchedRepo[T]) iterateChangeStream(ctx context.Context, cs *mongo.Chan
 				s.cfg = dto.FullDocument
 				if s.cfgWithDefaults, err = copyAndSetDefaults(s.cfg); err != nil {
 					s.lgr.With("error", err).ErrorContext(ctx, "could not set defaults")
+				}
+				if s.onUpdate != nil {
+					s.onUpdate(s.cfgWithDefaults.Config)
 				}
 			default:
 				s.lgr.With("operationType", dto.OperationType).ErrorContext(ctx, "invalid or unexpected operation")

@@ -4,11 +4,12 @@ GET http://localhost:8080/configs/latest
 
 ### Modify latest config
 PUT http://localhost:8080/configs/latest
-user-id: mark
+user-id: pippo
 
 {
-  "name": "stark",
-  "age": 35
+  "name": "gloria",
+  "age": 38,
+  "friends": ["joe", "mark"]
 }
 
 ### List config versions
