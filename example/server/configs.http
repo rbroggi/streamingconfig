@@ -7,9 +7,10 @@ PUT http://localhost:8080/configs/latest
 user-id: pippo
 
 {
-  "name": "gloria",
-  "age": 38,
-  "friends": ["joe", "mark"]
+  "name": "john",
+  "logLevel": "DEBUG",
+  "age": 40,
+  "friends": ["jack", "doug"]
 }
 
 ### List config versions

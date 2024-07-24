@@ -109,17 +109,17 @@ make dependencies_up
 make tests
 ```
 
-### Run example server
+### Run example 
 
+Start by starting the dependencies (mongo), and run the example-server which is a simple HTTP server to receive GET,POST requests for reading/updating configurations.
 ```shell
 make dependencies_up
-make example
+make run-example-server
 ```
-
-Optionally, you can also start a second server to check that the changes happening in one server will be reflected in the other:
+on a different shell, run the sample APP, which is an app that receives changes upon changes that happen in the configuration through the server API endpoints.
 
 ```shell
-HTTP_PORT=8081 make example
+make run-example-app
 ```
 
 #### Getting latest configuration request

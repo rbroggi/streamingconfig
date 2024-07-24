@@ -9,11 +9,12 @@ import (
 	"strconv"
 
 	config "github.com/rbroggi/streamingconfig"
+	appcfg "github.com/rbroggi/streamingconfig/example/config"
 )
 
 type server struct {
 	lgr  *slog.Logger
-	repo *config.WatchedRepo[*conf]
+	repo *config.WatchedRepo[*appcfg.Conf]
 }
 
 // latestConfigHandler returns the latest configuration
@@ -50,7 +51,7 @@ func (s *server) putConfigHandler(w http.ResponseWriter, r *http.Request) {
 	// Close the body to avoid leaks
 	defer r.Body.Close()
 
-	cfg := new(conf)
+	cfg := new(appcfg.Conf)
 	err = json.Unmarshal(body, cfg)
 	if err != nil {
 		s.lgr.With("error", err).ErrorContext(r.Context(), "unmarshalling request into configuration")
@@ -59,7 +60,7 @@ func (s *server) putConfigHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	updated, err := s.repo.UpdateConfig(r.Context(), config.UpdateConfigCmd[*conf]{
+	updated, err := s.repo.UpdateConfig(r.Context(), config.UpdateConfigCmd[*appcfg.Conf]{
 		By:     userID,
 		Config: cfg,
 	})

@@ -2,11 +2,9 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"log/slog"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -14,48 +12,16 @@ import (
 
 	config "github.com/rbroggi/streamingconfig"
 	appcfg "github.com/rbroggi/streamingconfig/example/config"
-
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func main() {
-	port := os.Getenv("HTTP_PORT")
-	if port == "" {
-		port = "8080"
-	}
 	runnableCtx, cancelRunnables := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancelRunnables()
-	repo, done := initRepo(runnableCtx)
-	s := &server{repo: repo, lgr: slog.Default()}
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /configs/latest", s.latestConfigHandler)
-	mux.HandleFunc("PUT /configs/latest", s.putConfigHandler)
-	mux.HandleFunc("GET /configs", s.listConfigsHandler)
-	// Create a new server
-	srv := &http.Server{
-		Addr:    fmt.Sprintf(":%s", port),
-		Handler: mux,
-	}
-	// Start the server in a goroutine
-	go func() {
-		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Fatal(err)
-		}
-	}()
-	fmt.Printf("Server listening on port %s\n", port)
+	_, done := initRepo(runnableCtx)
 	// until shutdown signal is sent
 	<-runnableCtx.Done()
-	// Graceful shutdown
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer func() {
-		cancel()
-	}()
-
-	if err := srv.Shutdown(ctx); err != nil {
-		log.Println("Error during shutdown:", err)
-	}
-	log.Println("Server stopped")
 	<-done
 }
 
@@ -66,7 +32,10 @@ func initRepo(ctx context.Context) (*config.WatchedRepo[*appcfg.Conf], <-chan st
 		config.Args{
 			Logger: lgr,
 			DB:     db,
-		})
+		}, config.WithOnUpdate[*appcfg.Conf](func(conf *appcfg.Conf) {
+			lgr.With("cfg", conf).Debug("config updated")
+			slog.SetLogLoggerLevel(conf.LogLevel)
+		}))
 	if err != nil {
 		log.Fatal(err)
 	}
